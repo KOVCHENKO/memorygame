@@ -5,13 +5,11 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 import Field from './components/Field';
 
 export default {
   name: 'app',
   components: {
-    HelloWorld,
     Field
   }
 }

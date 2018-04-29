@@ -12,100 +12,49 @@
 </template>
 
 <script>
+
+import GameService from '../services/GameService';
+import CardsService from "../services/CardsService";
+
 export default {
   name: 'Field',
 
   created() {
-    this.shuffleCards(this.cards);
+    this.gameService = new GameService();
+    this.cardService = new CardsService();
+
+    this.cards = this.gameService.createBunchOfCards();
+    this.cards = this.gameService.shuffleCards(this.cards);
   },
 
   data() {
       return {
-        cards : [
-            {
-                id: 1,
-                isOpened: false,
-                value: 'apple'
-            },
-            {
-                id: 2,
-                isOpened: false,
-                value: 'orange'
-            },
-            {
-                id: 3,
-                isOpened: false,
-                value: 'plum'
-            },
-            {
-                id: 4,
-                isOpened: false,
-                value: 'apple'
-            },
-            {
-                id: 5,
-                isOpened: false,
-                value: 'orange'
-            },
-            {
-                id: 6,
-                isOpened: false,
-                value: 'plum'
-            }
-        ],
+        cardService: Object,
+        gameService: Object,
+
+        cards: [],
 
         openedCards: [],
-        gameMessage: 'gameMessage',
+        gameMessage: 'start',
         turnCounter: 0
       }
   },
 
   methods: {
-    shuffleCards(cards) {
-        let currentIndex = cards.length, temporaryValue, randomIndex;
-
-        while (currentIndex !== 0) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex -= 1;
-            temporaryValue = cards[currentIndex];
-            cards[currentIndex] = cards[randomIndex];
-            cards[randomIndex] = temporaryValue;
-        }
-        return cards;
-    },
-
     openCard(card) {
         this.openedCards.push(card);
         card.isOpened = true;
 
         if(this.openedCards.length === 2){
-            this.checkIfCardsMatch();
-        }
-    },
-
-    checkIfCardsMatch() {
-        if(this.openedCards[0].value === this.openedCards[1].value){
-            this.matched();
-        } else {
-            this.unmatched();
+           this.gameMessage = this.cardService.checkIfCardsMatch(this.openedCards, this.cards);
+           this.nextTurn();
+           this.turnCounter++
         }
 
-        this.turnCounter++
-    },
-
-    matched() {
-      this.gameMessage = 'cards match';
-      setTimeout(this.removeMatchedCards, 1000);
-      this.nextTurn();
-    },
-
-    unmatched() {
-      this.gameMessage = 'cards not match';
-      this.nextTurn();
     },
 
     nextTurn() {
-        setTimeout(this.closeCards, 1000);
+        setTimeout(this.closeCards, 500);
     },
 
     closeCards() {
@@ -113,23 +62,15 @@ export default {
             card.isOpened = false;
             this.openedCards = [];
         }
-    },
-
-    removeMatchedCards() {
-        let subIndex = this.cards.map((e) => {
-            return e.id;
-        }).indexOf(parseInt(this.openedCards[0].id));
-        this.cards.splice(subIndex, 1);
-
-        let subIndex2 = this.cards.map((e) => {
-            return e.id;
-        }).indexOf(parseInt(this.openedCards[1].id));
-        this.cards.splice(subIndex2, 1);
-
-        this.closeCards();
     }
+  },
 
-
+  watch: {
+      cards() {
+          if (this.cards.length === 0) {
+              this.gameMessage = 'game is over';
+          }
+      }
   }
 }
 </script>
