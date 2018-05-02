@@ -1,4 +1,4 @@
-import Card from "../entities/Card";
+import Card from "../domain/Card";
 
 export default class GameService
 {

@@ -1,11 +1,13 @@
 <template>
   <div>
-    <p>Information: {{ gameMessage }}</p>
+    <p v-if="game.isCompleted()">Game is completed</p>
+
     <p>Number of turns: {{ turnCounter }}</p>
     <div class="row">
-      <div v-for="card in cards" class="col-md-3 card" @click="openCard(card)" :class="{ isOpened : card.isOpened }">
+      <div v-for="card in game.getCards()" class="col-md-3 card" @click="openCard(card)" :class="{ isOpened : card.isOpened }">
         <p>Fruit</p>
-        <p v-show="card.isOpened">{{ card.value }}</p>
+        <!--<p v-show="card.isOpened">{{ card.value }}</p>-->
+        <p>{{ card.value }}</p>
       </div>
     </div>
   </div>
@@ -14,7 +16,9 @@
 <script>
 
 import GameService from '../services/GameService';
-import CardsService from "../services/CardsService";
+import CardsService from "../services/CardsService"; //
+import CardsCollection from '../domain/CardsCollection';
+import Game from '../domain/Game';
 
 export default {
   name: 'Field',
@@ -23,55 +27,25 @@ export default {
     this.gameService = new GameService();
     this.cardService = new CardsService();
 
-    this.cards = this.gameService.createBunchOfCards();
-    this.cards = this.gameService.shuffleCards(this.cards);
+    let cards = this.gameService.createBunchOfCards();
+    cards = this.gameService.shuffleCards(cards);
+
+    this.game = new Game(new CardsCollection(cards));
+
   },
 
   data() {
       return {
-        cardService: Object,
-        gameService: Object,
-
-        cards: [],
-
-        openedCards: [],
-        gameMessage: 'start',
+        game: Object,
         turnCounter: 0
       }
   },
 
   methods: {
     openCard(card) {
-        this.openedCards.push(card);
-        card.isOpened = true;
-
-        if(this.openedCards.length === 2){
-           this.gameMessage = this.cardService.checkIfCardsMatch(this.openedCards, this.cards);
-           this.nextTurn();
-           this.turnCounter++
-        }
-
-    },
-
-    nextTurn() {
-        setTimeout(this.closeCards, 500);
-    },
-
-    closeCards() {
-        for (let card of this.cards) {
-            card.isOpened = false;
-            this.openedCards = [];
-        }
+        this.game.openCard(card);
     }
   },
-
-  watch: {
-      cards() {
-          if (this.cards.length === 0) {
-              this.gameMessage = 'game is over';
-          }
-      }
-  }
 }
 </script>
 
